@@ -211,11 +211,11 @@ datablock ItemData(FlareGunItem)
 	ItemAmmo_ammoTypes = "Flare";
 	ItemAmmo_maxStorageUnits = 1;
 	
-	image = FlareGunImage9;
+	image = FlareGunImage;
 };
 
 $c = -1;
-datablock shapeBaseImageData(FlareGunImage9)
+datablock shapeBaseImageData(FlareGunImage)
 {
 	className = "ItemAmmo_WeaponImage";
 
@@ -293,46 +293,41 @@ datablock shapeBaseImageData(FlareGunImage9)
 	stateTransitionOnTimeout[$c] = "ready";
 };
 
-function FlareGunImage9::onFire(%data,%p,%slot)
+function FlareGunImage::onFire(%data,%p,%slot)
 {
 	%p.playThread(2,"plant");
 	serverPlay3D(flareGunFireSound,%p.getPosition());
 	parent::onFire(%data,%p,%slot);
 }
 
-function FlareGunImage9::onDryFire(%data,%p,%slot)
+function FlareGunImage::onDryFire(%data,%p,%slot)
 {
 	serverPlay3D(flareGunDryFireSound,%p.getPosition());
 	parent::onDryFire(%data,%p,%slot);
 }
 
-function FlareGunImage9::onBreak(%data,%p,%slot)
+function FlareGunImage::onBreak(%data,%p,%slot)
 {
 	%p.playThread(2,"plant");
 	serverPlay3D(flareGunBreakSound,%p.getPosition());
 }
 
-function FlareGunImage9::OnReloadFinish(%data,%p,%slot)
+function FlareGunImage::OnReloadFinish(%data,%p,%slot)
 {
 	%p.playThread(2,"plant");
 	serverPlay3D(flareGunLoadSound,%p.getPosition());
 	parent::OnReloadFinish(%data,%p,%slot);
 }
 
-function FlareGunImage9::onUnbreak(%data,%p,%slot)
+function FlareGunImage::onUnbreak(%data,%p,%slot)
 {
 	%p.playThread(2,"plant");
 	serverPlay3D(flareGunUnBreakSound,%p.getPosition());
 }
 
-function FlareGunImage9::OnReloadFail(%data,%p,%slot)
+function FlareGunImage::OnReloadFail(%data,%p,%slot)
 {
 	parent::OnReloadFail(%data,%p,%slot);
-}
-
-function FlareClipImage::OnSelect(%data,%p,%slot)
-{
-	parent::OnSelect(%data,%p,%slot);
 }
 
 datablock ItemData(FlareItem)
