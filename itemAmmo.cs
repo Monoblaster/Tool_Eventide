@@ -26,7 +26,7 @@ function ItemAmmo_ContainerImage::PopAmmo(%data,%obj,%slot)
 		
 	}
 
-	%d = %obj.dataInstance(%obj.currTool);
+	%d = %obj.ItemDI(%obj.currTool);
 	%list = %d.ItemAmmo_storage;
 	%count = getWordCount(%list);
 	for(%i = 0; %i < %count; %i++)
@@ -205,8 +205,8 @@ function ItemAmmo_PushSelected(%obj)
 	//add ammo to storage
 	%d.ItemAmmo_storageUnits += %ammo.ItemAmmo_storageUnits;
 	%d.ItemAmmo_storage = trim(%d.ItemAmmo_storage SPC %ammo);
-	%d.DataInstance_Add(%obj.dataInstance(%ammoSlot));
-	%d.DataInstance_Parent.DataInstance_Set(%ammoSlot);
+	%d.DataInstance_Add(%obj.ItemDI(%ammoSlot));
+	%obj.ItemDI().DataInstance_Set(%ammoSlot);
 
 	//remove ammo item
 	%obj.tool[%ammoSlot] = 0;
