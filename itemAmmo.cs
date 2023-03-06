@@ -115,7 +115,7 @@ function ItemAmmo_Display(%obj)
 	{
 		if(ItemAmmo_HasAmmo(%obj))
 		{
-			%s = %s @ "<just:right>\c3Loaded (" @ %obj.dataInstance(%obj.currTool).ItemAmmo_storageUnits @
+			%s = %s @ "<just:right>\c3Loaded (" @ %obj.ItemDI(%obj.currTool).ItemAmmo_storageUnits @
 			"/" @ %obj.tool[%obj.currTool].ItemAmmo_maxStorageUnits @ ")\n";
 		}
 		
@@ -129,7 +129,7 @@ function ItemAmmo_Display(%obj)
 
 function ItemAmmo_HasAmmo(%obj)
 {
-	%d = %obj.dataInstance(%obj.currTool);
+	%d = %obj.ItemDI(%obj.currTool);
 	%list = %d.ItemAmmo_storage;
 	%count = getWordCount(%list);
 	for(%i = 0; %i < %count; %i++)
@@ -145,7 +145,7 @@ function ItemAmmo_HasAmmo(%obj)
 
 function ItemAmmo_PopAmmo(%obj)
 {
-	%d = %obj.dataInstance(%obj.currTool);
+	%d = %obj.ItemDI(%obj.currTool);
 	%list = %d.ItemAmmo_storage;
 	%count = getWordCount(%list);
 	for(%i = 0; %i < %count; %i++)
@@ -184,7 +184,7 @@ function ItemAmmo_CanUseAmmo(%obj)
 		return false;
 	}
 
-	%d = %obj.dataInstance(%obj.currTool);
+	%d = %obj.ItemDI(%obj.currTool);
 	if((%d.ItemAmmo_storageUnits + %ammo.ItemAmmo_storageUnits + 0) > %weapon.ItemAmmo_maxStorageUnits)
 	{
 		//too full
@@ -198,7 +198,7 @@ function ItemAmmo_PushSelected(%obj)
 	%weapon = %obj.tool[%obj.currTool];
 	%ammo = getWord(%obj.ItemAmmo_Selected,0);
 	%ammoSlot = getWord(%obj.ItemAmmo_Selected,1);
-	%d = %obj.dataInstance(%obj.currTool);
+	%d = %obj.ItemDI(%obj.currTool);
 
 	ItemAmmo_Select(%obj);
 
@@ -206,7 +206,7 @@ function ItemAmmo_PushSelected(%obj)
 	%d.ItemAmmo_storageUnits += %ammo.ItemAmmo_storageUnits;
 	%d.ItemAmmo_storage = trim(%d.ItemAmmo_storage SPC %ammo);
 	%d.DataInstance_Add(%obj.dataInstance(%ammoSlot));
-	%obj.DataInstance_Set(%ammoSlot);
+	%d.DataInstance_Parent.DataInstance_Set(%ammoSlot);
 
 	//remove ammo item
 	%obj.tool[%ammoSlot] = 0;
@@ -240,7 +240,7 @@ function ItemAmmo_Unload(%p)
 			if(%p.tool[%i] == 0)
 			{
 				%p.tool[%i] = getWord(%ammo,0);
-				%p.dataInstance_set(%i,getWord(%ammo,1));
+				%p.ItemDI().dataInstance_set(%i,getWord(%ammo,1));
 
 				%c = %p.client;
 				if(isObject(%c))
@@ -252,7 +252,7 @@ function ItemAmmo_Unload(%p)
 		}
 
 		%p.tool[100] = getWord(%ammo,0);
-		%p.dataInstance_set(100,getWord(%ammo,1));
+		%p.ItemDI().dataInstance_set(100,getWord(%ammo,1));
 		%c = %p.client;
 		if(isObject(%c))
 		{

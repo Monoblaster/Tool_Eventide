@@ -35,13 +35,19 @@ function DataInstance_ListStringSerialize(%list)
 	return %s;
 }
 
-function SimObject::DataInstance(%obj,%slot)
+function SimObject::DataInstance(%obj,%a0,%a1,%a2,%a3,%a4,%a5,%a6,%a7,%a8,%a9,%a10,%a11,%a12,%a13)
 {
-	%d = getWord(%obj.DataInstance_List,%slot);
-	if(%d $= "")
+	%c = 0;
+	while(%a[%c] !$= "")
 	{
-		%d = new ScriptObject(){class = "DataInstance";DataInstance_Parent = %obj;};
-		%obj.DataInstance_List = setWord(%obj.DataInstance_List,%slot,%d);
+		%d = getWord(%obj.DataInstance_List,%a[%c]);
+		if(%d $= "")
+		{
+			%d = new ScriptObject(){class = "DataInstance";DataInstance_Parent = %obj;};
+			%obj.DataInstance_List = setWord(%obj.DataInstance_List,%a[%c],%d);
+		}
+		%obj = %d;
+		%c++;
 	}
 	return %d;
 }
@@ -53,13 +59,22 @@ function SimObject::DataInstance_Set(%obj,%slot,%s)
 	return "";
 }
 
-function SimObject::DataInstance_Add(%obj,%s)
+function SimObject::DataInstance_Add(%obj,%s,%slot)
 {
-	%slot = getWordCount(%obj.DataInstance_List);
+	if(%slot $= "")
+	{
+		%slot = getWordCount(%obj.DataInstance_List);
+	}
 	%s = getWord(%s,0);
-	%obj.DataInstance_List = setWord(%obj.DataInstance_List,%slot,%s);
+	%obj.DataInstance_List = setWord(%obj.DataInstance_List,%slot,trim(%s SPC getWord(%obj.DataInstance_List,%slot)));
 	return "";
 }
+
+function SimObject::DataInstance_ListGet(%obj)
+{
+	return %obj.DataInstance_List;
+}
+
 
 function SimObject::DataInstance_ListSet(%obj,%s)
 {
@@ -70,6 +85,11 @@ function SimObject::DataInstance_ListSet(%obj,%s)
 function SimObject::DataInstance_ListSave(%obj)
 {
 	%id = %obj.DataIdentifier();
+	if(%id $= "")
+	{
+		warn("Cannot save " @ %obj.getClassName());
+		return;
+	}
 	%fo = new FileObject();
 	%s = DataInstance_ListStringSerialize(%obj.DataInstance_List);
 	%fo.close();
@@ -85,6 +105,11 @@ function SimObject::DataInstance_ListSave(%obj)
 function SimObject::DataInstance_ListLoad(%obj)
 {
 	%id = %obj.DataIdentifier();
+	if(%id $= "")
+	{
+		warn("Cannot load " @ %obj.getClassName());
+		return;
+	}
 	%fo = new FileObject();
 	if(%fo.OpenForRead($DataInstance::FilePath @ "/" @ %id @ ".cs"))
 	{
@@ -126,6 +151,10 @@ function SimObject::DataInstance_ListLoad(%obj)
 	}
 }
 
+function SimObject::DataIdentifier(%obj,%append)
+{
+	return "";
+}
 
 function Player::DataIdentifier(%obj,%append)
 {
@@ -134,6 +163,11 @@ function Player::DataIdentifier(%obj,%append)
 	{
 		return %c.getBLID() @ %append;
 	}
+}
+
+function fxDtsBrick::DataIdentifier(%obj,%append)
+{
+	return %obj.getTransform() @ %obj.getDatablock() @ %append;
 }
 
 function DataInstance::DataIdentifier(%obj,%append)
@@ -163,56 +197,58 @@ function DataInstance::StringSerialize(%d)
 		{
 			%value = %d.DataInstance_ListSave();
 		}
-		%s = %s @ %name @ "=\"" @ %value @ "\";";
+		%s = %s @ getSubStr(%name,0,1) @ "[\"" @ getSubStr(%name,1,999999) @ "\"]" @ "=\"" @ %value @ "\";";
 		%c++;
 	}
 	%s = %s @ "};";
 	return %s;
 }
 
+function Player::ItemDI(%obj,%slot)
+{
+	return %obj.dataInstance($DataInstance::Item,%slot);
+}
+
+$DataInstance::Item = 0;
 function DataInstance_GetFromThrower(%item)
 {
     %p = findClientByBl_Id(%item.bl_id).player;
     if(isObject(%p))
     {
 		%datablock = %item.getDatablock().getId();
-		%list = %p.dataInstance_List;
+		%list = %p.ItemDI().dataInstance_List;
         %count = getWordCount(%list);
         for(%i = 0; %i < %count; %i++)
         {
             if(%p.tool[%i] == 0 && isObject(%d = getWord(%list,%i)))
             {
                 %item.dataInstance_set(0,%d);
-				%p.DataInstance_Set(%i);
+				%p.ItemDI().DataInstance_Set(%i);
                 return "";
             }
         }
     }
 }
 
+package DataInstance_SimObject_OnRemove
+{
+	function SimObject::OnRemove()
+	{
+		return "";
+	}
+};
+
+if(!isFunction("SimObject","OnRemove"))
+{
+	activatePackage("DataInstance_SimObject_OnRemove");
+}
+
 package DataInstance
 {
-	function Armor::OnRemove(%data,%obj)
+	function SimObject::OnRemove(%data,%obj)
 	{
-		DataInstance_ListDelete(%obj.DataInstance_List);
+		DataInstance_ListDelete(%obj.ItemDI().DataInstance_List);
 		parent::OnRemove(%data,%obj);
-	}
-
-	function Item::OnRemove(%data,%obj)
-	{
-	 	DataInstance_ListDelete(%obj.DataInstance_List);
-		parent::OnRemove(%data,%obj);
-	}
-
-	function fxDtsBrick::OnRemove(%data,%obj)
-	{
-	 	DataInstance_ListDelete(%obj.DataInstance_List);
-		parent::OnRemove(%data,%obj);
-	}
-
-	function DataInstance::OnRemove(%obj)
-	{
-	 	DataInstance_ListDelete(%obj.DataInstance_List);
 	}
 
 	function ItemData::onPickup (%this, %obj, %user, %amount)
@@ -231,7 +267,7 @@ package DataInstance
 		{
 			if(%before[%i] != %user.tool[%i])
 			{
-				%user.DataInstance_set(%i,%data);
+				%user.ItemDI().DataInstance_set(%i,%data);
 				break;
 			}
 		}
