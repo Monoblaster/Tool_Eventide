@@ -247,7 +247,10 @@ package DataInstance
 {
 	function SimObject::OnRemove(%data,%obj)
 	{
-		DataInstance_ListDelete(%obj.ItemDI().DataInstance_List);
+		if(isObject(%obj))
+		{
+			DataInstance_ListDelete(%obj.dataInstance($DataInstance::Item).DataInstance_List);
+		}
 		parent::OnRemove(%data,%obj);
 	}
 

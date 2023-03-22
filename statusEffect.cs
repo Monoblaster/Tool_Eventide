@@ -25,6 +25,11 @@ function SimObject::StatusEffect(%obj,%type,%id,%data)
 function SimObject::StatusEffect_FindName(%obj,%name,%offset)
 {
 	%group = %obj.StatusEffect_Group;
+	if(!isObject(%group))
+	{
+		return 0;
+	}
+
 	%count = %group.getCount();
 	for(%i = %offset + 0; %i < %count; %i++)
 	{
@@ -40,6 +45,11 @@ function SimObject::StatusEffect_FindName(%obj,%name,%offset)
 function SimObject::StatusEffect_FindType(%obj,%type,%offset)
 {
 	%group = %obj.StatusEffect_Group;
+	if(!isObject(%group))
+	{
+		return 0;
+	}
+
 	%count = %group.getCount();
 	for(%i = %offset + 0; %i < %count; %i++)
 	{
